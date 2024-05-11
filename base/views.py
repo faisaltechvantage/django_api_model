@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import User
 from .serializers import *
 from base.functions import *
@@ -69,9 +70,22 @@ class UserDetailsUpdate(APIView):
 class UserList(APIView):
     def get(self, request):
         try:
+            page_number = request.GET.get("page")
+            page_size= request.GET.get("page_size")
+            if not page_size:
+                page_size= 5
             users = User.objects.all()
             serializer = UserSerializer(users, many=True)
-            return success_response(data= serializer.data, message= "User details", status_code= status.HTTP_200_OK)
+            pagination= Paginator(serializer.data, page_size)
+            try:
+                page_obj = pagination.get_page(page_number)  # returns the desired page object
+            except PageNotAnInteger:
+                # if page_number is not an integer then assign the first page
+                page_obj = pagination.page(1)
+            except EmptyPage:
+                # if page is empty then return last page
+                page_obj = pagination.page(pagination.num_pages)
+            return success_response(data= page_obj.object_list, message= "User details", status_code= status.HTTP_200_OK)
         except Exception as e:
             error_message = str(e)
             return error_response(message="Error retrieving user list", errors=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
