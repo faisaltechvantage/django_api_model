@@ -75,3 +75,33 @@ class UserList(APIView):
         except Exception as e:
             error_message = str(e)
             return error_response(message="Error retrieving user list", errors=error_message, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# user delete api  
+class UserDelete(APIView):
+    def delete(self, request):
+        try:
+            user_instance = User.objects.get(pk=request.data["user_id"])
+            if user_instance:
+                user_instance.delete()
+                return success_response(data= None, message= "User deleted", status_code= status.HTTP_200_OK)
+            else:
+                return error_response(message= "error", errors= user_instance.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            error_message = str(e)
+            return error_response(message= "error", errors= error_message, status_code= status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# operations
+class Operations(APIView):
+    def get(self, request):
+        try:
+            user_instance = User.objects.filter()
+            print(user_instance)
+            for i in user_instance:
+                print(i.name)
+            if user_instance:
+                return success_response(data= None, message= "Details", status_code= status.HTTP_200_OK)
+            else:
+                return error_response(message= "error", errors= user_instance.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            error_message = str(e)
+            return error_response(message= "error", errors= error_message, status_code= status.HTTP_500_INTERNAL_SERVER_ERROR)
